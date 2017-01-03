@@ -17,4 +17,5 @@ SJCL is dual-licensed under the GNU GPL version 2.0 or higher, and a 2-clause BS
 
 More infomation is available:
   * https://www.dokuwiki.org/plugin:encryptedpasswords
+  * https://github.com/cqix/dw-plugin-encryptedpasswords
 
