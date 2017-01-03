@@ -60,7 +60,7 @@ function addBtnActionEncryptButtonClick(btn, props, edid) {
                         return false;
                     }
                     document.getElementById('wiki__text').focus();
-                    pasteText(selection,'<decrypt>'+window.btoa(sjcl.encrypt(passElt.value, plainText))+'</decrypt>');
+                    pasteText(selection,'<decrypt>'+window.btoa(sjcl.encrypt(passElt.value, selectedText))+'</decrypt>');
                     vcClick_func(0);
                 } else { 
                     vcClick_func(0);
