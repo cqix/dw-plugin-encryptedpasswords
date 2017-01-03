@@ -3,34 +3,38 @@
   *
   * @license    GPL2 (http://www.gnu.org/licenses/gpl.html)
   * @author     Wolfgang Reszel <reszel@werbeagentur-willers.de>
+  * @author     Christian Koller <admin@iecw.net>
   */
 
-/* DOKUWIKI:include gibberish-aes.js */
+/* DOKUWIKI:include sjcl.js */
 /* DOKUWIKI:include jsencryption.js */
 
 // Add a toolbar button to insert a encrypted password
 function addBtnActionEncryptButtonClick(btn, props, edid) {
 
     jQuery(btn).click(function(){
-        var sample = '';
+        //Get selected text
+        var selectedText = '';
         if (typeof DWgetSelection == 'function') {
             var selection = DWgetSelection(document.getElementById('wiki__text'));
         } else {
             var selection = getSelection(document.getElementById('wiki__text'));
         }
         if (selection.getLength()) {
-            sample = selection.getText();
+            selectedText = selection.getText();
         }
-        if (sample=='') {
+        if (selectedText=='') {
             alert(LANG.plugins.encryptedpasswords['noSelection']);
             return false;
         }
-        if (sample.indexOf('<decrypt>') == 0 && sample.indexOf('</decrypt>') == sample.length-10) {
+        
+        //De-/Encrypt
+        if (selectedText.indexOf('<decrypt>') == 0 && selectedText.indexOf('</decrypt>') == selectedText.length-10) {
             vcPrompt(LANG.plugins.encryptedpasswords['enterKey'], LANG.plugins.encryptedpasswords['decrypt'], 1, vcFunc = function(a) {
                 if (a) {
                     document.getElementById('wiki__text').focus();
                     try {
-                        decText = GibberishAES.dec((sample.substr(9,sample.length-19)),passElt.value);
+                        decText = sjcl.decrypt(passElt.value, window.atob(selectedText.substr(9,selectedText.length-19)) );
                     } catch(err) { decText = null }
                     if (decText) {
                         pasteText(selection, decText);
@@ -56,7 +60,7 @@ function addBtnActionEncryptButtonClick(btn, props, edid) {
                         return false;
                     }
                     document.getElementById('wiki__text').focus();
-                    pasteText(selection,'<decrypt>'+GibberishAES.enc(sample,passElt.value).replace(/\n$|\r$|\r\n$/g,'')+'</decrypt>');
+                    pasteText(selection,'<decrypt>'+window.btoa(sjcl.encrypt(passElt.value, plainText))+'</decrypt>');
                     vcClick_func(0);
                 } else { 
                     vcClick_func(0);

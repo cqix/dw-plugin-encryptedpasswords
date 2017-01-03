@@ -1,54 +1,41 @@
 /**
-  * JavaScript Encryption and Decryption 2.0
-  * http://www.vincentcheung.ca/jsencryption/
-  *
-  * The backend is Gibberish AES by Mark Percival (https://github.com/mdp/gibberish-aes)
-  *
-  * Copyright 2008 Vincent Cheung
-  * Dec. 16, 2008
-  *
-  * + Modified for full localization by Wolfgang Reszel on Mai 6, 2010
-  * + Compatibility with Dokuwiki Weatherwax RC1 (Mar 13, 2013)
-  * 
-  */
+ * JavaScript Encryption and Decryption 2.0
+ * http://www.vincentcheung.ca/jsencryption/
+ *
+ * The backend is SJCL (https://github.com/bitwiseshiftleft/sjcl)
+ *
+ * Copyright 2008 Vincent Cheung
+ * Dec. 16, 2008
+ *
+ * + Modified for full localization by Wolfgang Reszel on Mai 6, 2010
+ * + Compatibility with Dokuwiki Weatherwax RC1 (Mar 13, 2013)
+ * + Modified for SJCL by Christian Koller in 2016
+ * 
+ */
 
-var decryptElementId;
+function decryptText(decryptElementIds) {
+    var password = prompt(LANG.plugins.encryptedpasswords['enterKey'], "");
 
-function decryptText(a, b, c) {
-    decryptElementId = a;
-    if (b == null) {
-        b = LANG.plugins.encryptedpasswords['enterKey']
-    }
-    if (c != null && c) {
-        var d = prompt(b, "");
-        decrypt(d)
-    } else {
-        vcPrompt(b)
-    }
-}
-
-function decrypt(a) {
-    if (a != "" && a != null) {
-        // if (decryptElementId.constructor != Array) {
-        //     decryptElementId = [decryptElementId]
-        // }
-        var b = false;
-        for (var i = 0; i < decryptElementId.length; i++) {
-            if (typeof decryptElementId[i] == 'object') {
-                c = decryptElementId[i]
+    if (password !== "" && password !== null) {
+        var success = false;
+        for (var i = 0; i < decryptElementIds.length; i++) {
+            var decryptElement;
+            if (typeof decryptElementIds[i] === 'object') {
+                decryptElement = decryptElementIds[i]
             } else {
-                var c = document.getElementById(decryptElementId[i])
+                decryptElement = document.getElementById(decryptElementIds[i])
             }
-            var d = c.title;
             try {
-                var e = GibberishAES.dec(d, a);
-                b = true;
-                jQuery(c).text(e).after(' <span class="recrypt"><a href="." onclick="location.reload(); return false;">['+LANG.plugins.encryptedpasswords['recrypt']+']</a></span>');
-                c.title = "";
-            } catch(err) {}
+                var plaintext = window.atob(decryptElement.title);
+                var encrypted = sjcl.decrypt(password, plaintext);
+                success = true;
+                jQuery(decryptElement).text(encrypted).after(' <span class="recrypt"><a href="." onclick="location.reload(); return false;">[' + LANG.plugins.encryptedpasswords['recrypt'] + ']</a></span>');
+                decryptElement.title = "";
+            } catch (err) {
+            }
         }
-        if (!b) {
-            alert(LANG.plugins.encryptedpasswords['invalidKey'])
+        if (!success) {
+            alert(LANG.plugins.encryptedpasswords['invalidKey']);
         }
     }
 }
@@ -58,9 +45,9 @@ var winElt = null;
 var passElt = null;
 var promptElt = null;
 
-function vcPrompt(a,a2,a3,vcClick) {
+function vcPrompt(a, a2, a3, vcClick) {
     if (overlayElt == null || winElt == null || passElt == null || promptElt == null) {
-        vcCreateDialog(a,a2,a3,vcClick)
+        vcCreateDialog(a, a2, a3, vcClick)
     }
     promptElt.innerHTML = a != null ? a : "Enter password:";
     pageSize = getPageSize();
@@ -83,8 +70,9 @@ function vcPrompt(a,a2,a3,vcClick) {
     passElt.select()
 }
 
-function vcCreateDialog(a,a2,a3,vcClick) {
-    if (vcClick == undefined) vcClick = vcClick_func;
+function vcCreateDialog(a, a2, a3, vcClick) {
+    if (vcClick == undefined)
+        vcClick = vcClick_func;
     overlayElt = document.createElement("div");
     overlayElt.setAttribute("id", "vcOverlay");
     var s = overlayElt.style;
@@ -138,7 +126,7 @@ function vcCreateDialog(a,a2,a3,vcClick) {
     passElt.setAttribute("id", "vcPass");
     passElt.setAttribute("tabindex", "1001");
     passElt.type = "password";
-    passElt.onkeyup = function(c) {
+    passElt.onkeyup = function (c) {
         if (c == null) {
             c = window.event
         }
@@ -167,7 +155,7 @@ function vcCreateDialog(a,a2,a3,vcClick) {
         passElt2.setAttribute("id", "vcPass2");
         passElt2.setAttribute("tabindex", "1002");
         passElt2.type = "password";
-        passElt2.onkeyup = function(c) {
+        passElt2.onkeyup = function (c) {
             if (c == null) {
                 c = window.event
             }
@@ -191,7 +179,7 @@ function vcCreateDialog(a,a2,a3,vcClick) {
         s.backgroundColor = "white";
         b.appendChild(passElt2);
     }
-    
+
     var c = document.createElement("div");
     c.style.textAlign = "right";
     c.style.fontFamily = "Arial, sans-serif";
@@ -201,7 +189,7 @@ function vcCreateDialog(a,a2,a3,vcClick) {
     d.setAttribute("tabindex", "1003");
     d.type = "button";
     d.value = LANG.plugins.encryptedpasswords['cancel'];
-    d.onclick = function() {
+    d.onclick = function () {
         vcClick(0)
     };
     d.style.margin = "0 0 0 0.5em";
@@ -212,7 +200,7 @@ function vcCreateDialog(a,a2,a3,vcClick) {
     d.setAttribute("tabindex", "1004");
     d.type = "button";
     d.value = a2 != null ? a2 : LANG.plugins.encryptedpasswords['decrypt'];
-    d.onclick = function() {
+    d.onclick = function () {
         vcClick(1)
     };
     d.style.margin = "0 0 0 0.5em";
@@ -226,7 +214,8 @@ function vcClick_func(a) {
     winElt.style.display = "none";
     if (a) {
         decrypt(passElt.value)
-    } else {}
+    } else {
+    }
     overlayElt.parentNode.removeChild(overlayElt);
     winElt.parentNode.removeChild(winElt);
     passElt.parentNode.removeChild(passElt);
