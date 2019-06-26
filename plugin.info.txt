@@ -1,4 +1,4 @@
-base   encryptedpasswordsSJCL
+base   encryptedpasswords
 name   Encrypted Passwords Plugin SJCL
 author Wolfgang Reszel & Christian Koller
 email  reszel@werbeagentur-willers.de admin@iecw.net
